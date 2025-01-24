@@ -1,8 +1,6 @@
 import { Router, Request, Response } from "express";
-import sqlite3 from "sqlite3";
-
 const router = Router();
-const db = new sqlite3.Database(":memory:");
+import db from "../database";
 
 router.get("/by-date/:startDate/:endDate", (req: Request, res: Response) => {
   const { startDate, endDate } = req.params;

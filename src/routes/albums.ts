@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 const router = express.Router();
 import sqlite3 from "sqlite3";
-import db from "../database"; // Import the shared database instance
+import db from "../database";
 
 // Debug statement added
 router.get("/", (_req: Request, res: Response) => {

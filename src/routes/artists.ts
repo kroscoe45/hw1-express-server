@@ -1,8 +1,6 @@
 import { Router, Request, Response } from "express";
-import sqlite3 from "sqlite3";
-
 const router = Router();
-const db = new sqlite3.Database(":memory:");
+import db from "../database"; // Import the shared database instance
 
 router.get("/by-id/:id", (req: Request, res: Response) => {
   const { id } = req.params;
