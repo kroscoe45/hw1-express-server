@@ -1,6 +1,7 @@
 import globals from "globals";
 import pluginJs from "@eslint/js";
-import tseslint from "typescript-eslint";
+import tseslint from "@typescript-eslint/eslint-plugin";
+import tsParser from "@typescript-eslint/parser";
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [
@@ -9,13 +10,20 @@ export default [
     languageOptions: {
       ecmaVersion: "latest",
       sourceType: "module",
-      globals: globals.browser
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+        es2022: true,
+        node: true,
+      },
+      parser: tsParser,
     },
-    env: {
-      node: true,      // Enable Node.js global variables
-      es2022: true,    // Enable modern JavaScript features
+    plugins: {
+      "@typescript-eslint": tseslint,
     },
-    ...pluginJs.configs.recommended,
-    ...tseslint.configs.recommended,
+    rules: {
+      ...pluginJs.configs.recommended.rules,
+      ...tseslint.configs.recommended.rules,
+    },
   }
 ];
