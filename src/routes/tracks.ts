@@ -1,5 +1,4 @@
 import { Router, Request, Response } from "express";
-import sqlite3 from "sqlite3";
 const router = Router();
 import db from "../database";
 
@@ -58,6 +57,7 @@ router.post("/", (req: Request, res: Response) => {
       [pos, title, parsedDuration, parsedAlbumID, parsedArtistID],
       function (err) {
         if (err) {
+          console.error("Error inserting track:", err);
           res.status(500).send("Error inserting track");
           return;
         }

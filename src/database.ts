@@ -16,7 +16,8 @@ db.serialize(() => {
     CREATE TABLE IF NOT EXISTS artists (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT,
-      bio TEXT
+      bio TEXT,
+      socials TEXT
     )
   `);
 
@@ -26,7 +27,8 @@ db.serialize(() => {
       title TEXT,
       albumId INTEGER,
       artistId INTEGER,
-      duration INTEGER,
+      durationSeconds INTEGER,
+      pos INTEGER,
       FOREIGN KEY(albumId) REFERENCES albums(id),
       FOREIGN KEY(artistId) REFERENCES artists(id)
     )

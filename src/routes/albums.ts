@@ -101,7 +101,7 @@ router.delete("/by-id/:id", (req: Request, res: Response) => {
           res.status(500).send("Error deleting album");
           return;
         }
-        res.status(200).send("Album deleted");
+        res.status(204).send("Album deleted");
       });
     });
   });

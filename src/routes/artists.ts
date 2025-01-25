@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 const router = Router();
-import db from "../database"; // Import the shared database instance
+import db from "../database";
 
 router.get("/by-id/:id", (req: Request, res: Response) => {
   const { id } = req.params;
@@ -19,7 +19,7 @@ router.get("/by-id/:id", (req: Request, res: Response) => {
 });
 
 router.get("/", (req: Request, res: Response) => {
-  db.all("SELECT name FROM artists", (err, rows) => {
+  db.all("SELECT * FROM artists", (err, rows) => {
     if (err) {
       res.status(500).send("Error retrieving artists");
       return;
@@ -41,6 +41,7 @@ router.post("/", (req: Request, res: Response) => {
       [name, bio, serializedSocials],
       function (err) {
         if (err) {
+          console.error("Error inserting artist:", err);
           res.status(500).send("Error inserting artist");
           return;
         }
@@ -52,8 +53,9 @@ router.post("/", (req: Request, res: Response) => {
   });
 });
 
-router.patch("/by-id", (req: Request, res: Response) => {
-  const { id, name, bio, socials } = req.body;
+router.patch("/by-id/:id", (req: Request, res: Response) => {
+  const { name, bio, socials } = req.body;
+  const id = req.params.id;
   if (!id || isNaN(parseInt(id))) {
     res.status(400).send("Invalid or missing artist ID");
     return;
@@ -62,6 +64,7 @@ router.patch("/by-id", (req: Request, res: Response) => {
     res.status(400).send("Missing required fields");
     return;
   }
+  console.log("PATCH /artists/by-id/:id", { id, name, bio, socials });
   const query = `UPDATE artists SET ${name ? `name = ?` : ""}${
     name && (bio || socials) ? `, ` : ""
   }${bio ? `bio = ?` : ""}${(name || bio) && socials ? `, ` : ""}${
@@ -73,10 +76,15 @@ router.patch("/by-id", (req: Request, res: Response) => {
   db.serialize(() => {
     db.run(query, params, function (err) {
       if (err) {
+        console.error("Error updating artist:", err);
         res.status(500).send("Error updating artist");
         return;
       }
-      res.status(200).send({ id, name, bio, socials });
+      if (this.changes === 0) {
+        res.status(404).send("Artist not found");
+      } else {
+        res.status(200).send("Artist updated successfully");
+      }
     });
   });
 });

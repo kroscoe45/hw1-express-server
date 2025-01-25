@@ -98,11 +98,11 @@ async function runTests() {
     await testEndpoint('POST', '/albums', { title: 'Album Title', genre: 'Genre', releaseYear: 2021 }, 201);
     await testEndpoint('GET', '/albums', null, 200);
     await testEndpoint('GET', '/albums/by-id/1', null, 200);
-    await testEndpoint('GET', '/albums/by-title/AlbumTitle', null, 200);
+    await testEndpoint('GET', `/albums/by-title/${encodeURIComponent('Album Title')}`, null, 200);
     await testEndpoint('DELETE', '/albums/by-id/1', null, 204);
 
     // Tracks
-    await testEndpoint('POST', '/tracks', { pos: 1, title: 'Track Title', duration: 300, artistID: 1 }, 201);
+    await testEndpoint('POST', '/tracks', { pos: 1, title: 'Track Title', duration: 300, artistID: 1, albumID: 1 }, 201);
     await testEndpoint('GET', '/tracks/by-album/1', null, 200);
     await testEndpoint('GET', '/tracks/by-id/1', null, 200);
 
