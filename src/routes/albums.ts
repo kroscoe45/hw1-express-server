@@ -3,7 +3,6 @@ const router = express.Router();
 import sqlite3 from "sqlite3";
 import db from "../database";
 
-// Debug statement added
 router.get("/", (_req: Request, res: Response) => {
   console.log("GET /albums");
   db.all("SELECT title FROM albums", (err: Error, rows: any[]) => {
@@ -16,7 +15,6 @@ router.get("/", (_req: Request, res: Response) => {
   });
 });
 
-// Debug statement added
 router.get("/by-id/:id", (req: Request, res: Response) => {
   console.log(`GET /albums/by-id/${req.params.id}`);
   const { id } = req.params;
@@ -35,7 +33,6 @@ router.get("/by-id/:id", (req: Request, res: Response) => {
   });
 });
 
-// Debug statement added
 router.get("/by-title/:title", (req: Request, res: Response) => {
   console.log(`GET /albums/by-title/${req.params.title}`);
   const { title } = req.params;
@@ -58,7 +55,6 @@ router.get("/by-title/:title", (req: Request, res: Response) => {
   });
 });
 
-// Debug statement added
 router.post("/", (req: Request, res: Response) => {
   console.log("POST /albums");
   const { title, genre, releaseYear } = req.body;
@@ -81,35 +77,6 @@ router.post("/", (req: Request, res: Response) => {
   );
 });
 
-// Debug statement added
-router.put("/:id", (req: Request, res: Response) => {
-  console.log(`PUT /albums/${req.params.id}`);
-  const { id } = req.params;
-  const { title, genre, releaseYear } = req.body;
-  if (!title || !genre || !releaseYear) {
-    res.status(400).send("Missing required fields");
-    return;
-  }
-  const parsedReleaseYear = parseInt(releaseYear);
-  db.run(
-    "UPDATE albums SET title = ?, genre = ?, releaseYear = ? WHERE id = ?",
-    [title, genre, parsedReleaseYear, id],
-    function (err) {
-      if (err) {
-        console.error("Error updating album:", err);
-        res.status(500).send("Error updating album");
-        return;
-      }
-      if ((this as any).changes === 0) {
-        res.status(404).send("Album not found");
-        return;
-      }
-      res.status(200).send("Album updated");
-    }
-  );
-});
-
-// Debug statement added
 router.delete("/by-id/:id", (req: Request, res: Response) => {
   console.log(`DELETE /albums/by-id/${req.params.id}`);
   const { id } = req.params;
