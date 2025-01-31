@@ -1,16 +1,12 @@
 import express, { Request, Response } from "express";
-const router = express.Router();
 import sqlite3 from "sqlite3";
 import db from "../database";
 
+const router = express.Router();
+
 router.get("/", (_req: Request, res: Response) => {
-  console.log("GET /albums");
   db.all("SELECT title FROM albums", (err: Error, rows: any[]) => {
-    if (err) {
-      console.error("Error retrieving albums:", err);
-      res.status(500).send("Error retrieving albums");
-      return;
-    }
+    if (err) { res.status(500).send("Error retrieving albums"); }
     res.status(200).send(rows);
   });
 });

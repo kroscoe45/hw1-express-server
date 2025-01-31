@@ -49,8 +49,6 @@ const baseUrl = 'http://localhost:3000';
  *      name?: string, startDate?: string, durationMinutes?: number }
  */
 
-
-
 function testEndpoint(method, endpoint, body = null, expectedStatus) {
     return new Promise((resolve, reject) => {
         const options = {

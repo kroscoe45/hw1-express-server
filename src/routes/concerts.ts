@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
-const router = Router();
 import db from "../database";
+
+const router = Router();
 
 router.get("/by-date/:startDate/:endDate", (req: Request, res: Response) => {
   const { startDate, endDate } = req.params;

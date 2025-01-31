@@ -1,6 +1,14 @@
 import { Router, Request, Response } from "express";
-const router = Router();
 import db from "../database";
+
+const router = Router();
+
+router.options("/", (req: Request, res: Response) => {
+  res.header("Allow", "GET, POST");
+  res.status(204);
+});
+
+
 
 router.get("/by-album/:albumID", (req: Request, res: Response) => {
   const { albumID } = req.params;
@@ -74,4 +82,4 @@ router.post("/", (req: Request, res: Response) => {
   });
 });
 
-export default router;
+export {router as tracksRouter}
