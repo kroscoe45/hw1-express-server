@@ -89,4 +89,4 @@ router.patch("/by-id/:id", (req: Request, res: Response) => {
   });
 });
 
-export default router;
+export { router as artistsRouter };

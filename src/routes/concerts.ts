@@ -23,21 +23,21 @@ router.patch("/by-id/:id", (req: Request, res: Response) => {
   const { id } = req.params;
   if (!id || isNaN(parseInt(id))) {
     res.status(400).send("Invalid or missing concert ID");
-    return;
   }
   const { name, startDate, durationMinutes } = req.body;
   if (!name && !startDate && !durationMinutes) {
     res.status(400).send("Missing required fields");
     return;
   }
-  const query =
-    "UPDATE concerts SET " +
-    (name ? "name = ?" : "") +
-    (name && (startDate || durationMinutes) ? `, ` : "") +
-    (startDate ? `startDate = ?` : "") +
-    ((name || startDate) && durationMinutes ? `, ` : "") +
-    (durationMinutes ? `durationMinutes = ?` : "") +
-    ` WHERE id = ?`;
+  const query = `
+    UPDATE concerts SET 
+    ${name ? "name = ?" : ""}
+    ${name && (startDate || durationMinutes) ? ", " : ""}
+    ${startDate ? "startDate = ?" : ""}
+    ${(name || startDate) && durationMinutes ? ", " : ""}
+    ${durationMinutes ? "durationMinutes = ?" : ""}
+    WHERE id = ?
+  `;
   const params = [name, startDate, durationMinutes, id].filter(
     (param) => param !== undefined
   );
@@ -52,4 +52,4 @@ router.patch("/by-id/:id", (req: Request, res: Response) => {
   });
 });
 
-export default router;
+export { router as concertsRouter };

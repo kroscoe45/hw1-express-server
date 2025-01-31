@@ -17,7 +17,8 @@ db.serialize(() => {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT,
       bio TEXT,
-      socials TEXT
+      socials TEXT,
+      artist INTEGER NULL
     )
   `);
 

@@ -8,8 +8,6 @@ router.options("/", (req: Request, res: Response) => {
   res.status(204);
 });
 
-
-
 router.get("/by-album/:albumID", (req: Request, res: Response) => {
   const { albumID } = req.params;
   if (!albumID || isNaN(parseInt(albumID))) {
@@ -82,4 +80,4 @@ router.post("/", (req: Request, res: Response) => {
   });
 });
 
-export {router as tracksRouter}
+export { router as tracksRouter };

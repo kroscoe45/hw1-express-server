@@ -1,5 +1,3 @@
-const http = require('http');
-
 const baseUrl = 'http://localhost:3000';
 
 /**
@@ -49,40 +47,21 @@ const baseUrl = 'http://localhost:3000';
  *      name?: string, startDate?: string, durationMinutes?: number }
  */
 
-function testEndpoint(method, endpoint, body = null, expectedStatus) {
-    return new Promise((resolve, reject) => {
+async function testEndpoint(method, endpoint, body = null, expectedStatus) {
+    try {
         const options = {
             method,
-            headers: { 'Content-Type': 'application/json' }
+            headers: { 'Content-Type': 'application/json' },
+            body: body ? JSON.stringify(body) : null
         };
-        const req = http.request(`${baseUrl}${endpoint}`, options, (res) => {
-            let data = '';
-            res.on('data', (chunk) => {
-                data += chunk;
-            });
-            res.on('end', () => {
-                const status = res.statusCode;
-                console.log(`${method} ${endpoint}: Status ${status}, Expected ${expectedStatus}`);
-                try {
-                    const jsonData = JSON.parse(data);
-                    console.log(`Response:`, jsonData);
-                } catch (error) {
-                    console.log(`Response:`, data);
-                }
-                resolve();
-            });
-        });
-
-        req.on('error', (error) => {
-            console.error(`Error testing ${endpoint}:`, error);
-            reject(error);
-        });
-
-        if (body) {
-            req.write(JSON.stringify(body));
-        }
-        req.end();
-    });
+        const response = await fetch(`${baseUrl}${endpoint}`, options);
+        const status = response.status;
+        console.log(`${method} ${endpoint}: Status ${status}, Expected ${expectedStatus}`);
+        const data = await response.json();
+        console.log(`Response:`, data);
+    } catch (error) {
+        console.error(`Error testing ${endpoint}:`, error);
+    }
 }
 
 async function runTests() {
