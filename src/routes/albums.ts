@@ -2,6 +2,14 @@ import express, { Request, Response } from "express";
 import sqlite3 from "sqlite3";
 import db from "../database";
 
+interface Album {
+  id: number;
+  title: string;
+  genre: string;
+  releaseYear: number;
+  artist: string | null;
+}
+
 const router = express.Router();
 const fields = ["id", "title", "genre", "releaseYear", "artist"];
 
@@ -24,27 +32,27 @@ router.get("/", (req: Request, res: Response) => {
   );
 });
 
-router.post("/", (req: Request, res: Response) => {
-  const filters = fields.filter(f => f !== "id" && f in req.body);
-
-}, []);
-  const { title, genre, releaseYear, artist } = req.body;
-  const query = `INSERT INTO albums (${fields.join(", ")}) VALUES (?, ?, ?, ?)`;
-  if (title && genre && +releaseYear) {
-    db.run(
-      "INSERT INTO albums (title, genre, releaseYear, artist) VALUES (?, ?, ?, ?)",
-      [title, genre, +releaseYear, artist],
-      function (this: sqlite3.RunResult, err: Error) {
-        if (err) {
-          console.error("Error creating album:", err);
-          res.status(500).send("Error creating album");
-        }
-        res.status(201).json({ id: (this as any).lastID });
-      }
-    );
-  } else {
-    res.status(400).send("Missing required fields");
-  }
+router.post("/", async (req: Request, res: Response) => {
+  const bodyData = fields.filter(f => f !== "id" && f in req.body)
+  const insertStmnt = `INSERT INTO albums (${bodyData.join(", ")}) VALUES (${bodyData.map(() => "?").join(", ")})`;
+  const query = `SELECT * FROM albums WHERE ${bodyData.map(f => `${f} = ?`).join(" AND ")}`;
+  db.all<Album>(query, bodyData.map(f => req.body[f]), (err, rows) => {
+    if (!err && rows.length) {
+      try {
+        db.run(insertStmnt, bodyData.map(f => req.body[f]), (err) => {
+          try {
+            res.status(201)
+          }
+          catch (error) {
+            res.status(500).send("Error creating album");
+        }});
+      } catch (error) {
+        res.status(500).send("Error creating album");
+      };
+    } else {
+      res.status(400).send("Invalid album data");
+    }
+  });
 });
 
 router.delete("/by-id/:id", (req: Request, res: Response) => {
