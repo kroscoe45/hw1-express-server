@@ -7,5 +7,5 @@ export interface QueryOptions {
   limit?: number
   offset?: number
   orderBy?: string
-  order?: 'asc' | 'desc'
+  order?: "asc" | "desc"
 }

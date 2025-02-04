@@ -1,10 +1,12 @@
+import { ConcertArtist } from "./api-types"
+
 export interface SocialMediaLinks {
   facebook?: string
   twitter?: string
   instagram?: string
   [key: string]: string | undefined
 }
-  
+
 export interface Album {
   id?: number
   name: string
@@ -32,6 +34,5 @@ export interface Concert {
   id?: number
   startTime: string
   durationMinutes: number
-  primaryArtistId: number
-  additionalArtistIds?: number[]
+  artists?: ConcertArtist[]
 }
