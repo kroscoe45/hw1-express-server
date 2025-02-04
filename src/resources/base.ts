@@ -7,7 +7,7 @@ import {
   Links,
   ValidationError,
   DbResult,
-} from "../types/resource-models"
+} from "../types/resource-types"
 
 export abstract class BaseResource<T extends BaseModel> {
   protected router: Router
@@ -104,7 +104,7 @@ export abstract class BaseResource<T extends BaseModel> {
   // DELETE /resource/:id
   protected async delete(req: Request, res: Response): Promise<void> {
     try {
-      const result = await db.run<DbResult>(
+      const result = await db.run(
         `DELETE FROM ${this.tableName} WHERE id = ?`,
         [req.params.id]
       )

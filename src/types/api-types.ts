@@ -1,8 +1,7 @@
 export interface Link {
   href: string
   rel: string
-  method?: string
-  templated?: boolean
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
 }
 
 export interface Links {
@@ -15,11 +14,12 @@ export interface ApiResponse<T> {
   links: Links
 }
 
-export interface ValidationError extends Error {
-  statusCode: number
+export interface PaginationParams {
+  page?: number
+  limit?: number
 }
 
-export interface DbResult {
-  changes: number
-  lastID: number
+export interface TimeRange {
+  start: string
+  end: string
 }
