@@ -1,3 +1,43 @@
+# IDE and editor directories and files
+.idea
+.vscode
+
+# Build output
+build/
+dist/
+lib/
+
+# Local database files
+*.db
+*.sqlite
+*.sqlite3
+
+# macOS specific
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows specific
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+[Dd]esktop.ini
+
+# Temp files
+*.swp
+*.swo
+*~
+
+# Debug files
+.debug/
+debug.log
+
+# Test output
+test-results/
+jest-report/
+mochawesome-report/
+
 # Logs
 logs
 *.log

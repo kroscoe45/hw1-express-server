@@ -91,11 +91,94 @@ class Database {
         PRIMARY KEY(concertId, artistId)
       )`,
     ]
+    const triggers = [
+      `CREATE TRIGGER IF NOT EXISTS albums_etag_insert AFTER INSERT ON albums
+       BEGIN
+        UPDATE albums 
+        SET etag = lower(hex(randomblob(8))),
+          updatedAt = CURRENT_TIMESTAMP
+        WHERE id = NEW.id;
+       END;`,
+      `CREATE TRIGGER IF NOT EXISTS albums_etag_update AFTER UPDATE ON albums
+       BEGIN
+        UPDATE albums 
+        SET etag = lower(hex(randomblob(8))),
+          updatedAt = CURRENT_TIMESTAMP
+            WHERE id = NEW.id
+            AND (
+              name != OLD.name OR 
+              yearReleased != OLD.yearReleased OR 
+              genre != OLD.genre
+            );
+       END;`,
+      `CREATE TRIGGER IF NOT EXISTS artists_etag_insert AFTER INSERT ON artists
+        BEGIN
+          UPDATE artists 
+          SET etag = lower(hex(randomblob(8))),
+            updatedAt = CURRENT_TIMESTAMP
+          WHERE id = NEW.id;
+        END;`,
+      `CREATE TRIGGER IF NOT EXISTS artists_etag_update AFTER UPDATE ON artists
+        BEGIN
+          UPDATE artists 
+          SET etag = lower(hex(randomblob(8))),
+            updatedAt = CURRENT_TIMESTAMP
+          WHERE id = NEW.id
+            AND (
+              name != OLD.name OR 
+              biography != OLD.biography OR 
+              socialMediaLinks != OLD.socialMediaLinks
+            );
+        END;`,
+      `CREATE TRIGGER IF NOT EXISTS tracks_etag_insert AFTER INSERT ON tracks
+        BEGIN
+          UPDATE tracks 
+          SET etag = lower(hex(randomblob(8))),
+            updatedAt = CURRENT_TIMESTAMP
+          WHERE id = NEW.id;
+        END;`,
+      `CREATE TRIGGER IF NOT EXISTS tracks_etag_update AFTER UPDATE ON tracks
+        BEGIN
+          UPDATE tracks 
+          SET etag = lower(hex(randomblob(8))),
+            updatedAt = CURRENT_TIMESTAMP
+          WHERE id = NEW.id
+            AND (
+              title != OLD.title OR 
+              trackNumber != OLD.trackNumber OR 
+              durationSeconds != OLD.durationSeconds OR 
+              albumId != OLD.albumId OR 
+              primaryArtistId != OLD.primaryArtistId
+            );
+        END;`,
+      `CREATE TRIGGER IF NOT EXISTS concerts_etag_insert AFTER INSERT ON concerts
+        BEGIN
+          UPDATE concerts 
+          SET etag = lower(hex(randomblob(8))),
+            updatedAt = CURRENT_TIMESTAMP
+          WHERE id = NEW.id;
+        END;`,
+      `CREATE TRIGGER IF NOT EXISTS concerts_etag_update AFTER UPDATE ON concerts
+        BEGIN
+          UPDATE concerts 
+          SET etag = lower(hex(randomblob(8))),
+            updatedAt = CURRENT_TIMESTAMP
+          WHERE id = NEW.id
+            AND (
+              startTime != OLD.startTime OR 
+              durationMinutes != OLD.durationMinutes OR 
+              primaryArtistId != OLD.primaryArtistId
+            );
+        END;`,
+    ]
 
     try {
       await this.db.serialize(async () => {
         for (const table of tables) {
           await this.run(table)
+        }
+        for (const trigger of triggers) {
+          await this.run(trigger)
         }
       })
     } catch (error) {

@@ -256,20 +256,11 @@ export class ConcertResource extends BaseResource {
       const concertId = Number(req.params.id)
       const { artistId, role } = req.body
 
-      // Validate input
-      if (!artistId || !role) {
-        const response: ApiResponse<null> = {
-          error: "Artist ID and role are required",
-          links: this.generateResourceLinks(req, updatedConcert),
-        }
-        res.status(400).json(response)
-        return
-      }
-
       // Verify concert exists
-      const concert = await db.get("SELECT * FROM concerts WHERE id = ?", [
-        concertId,
-      ])
+      const concert = await db.get<Concert>(
+        "SELECT * FROM concerts WHERE id = ?",
+        [[concertId]]
+      )
 
       if (!concert) {
         const response: ApiResponse<null> = {
@@ -277,6 +268,16 @@ export class ConcertResource extends BaseResource {
           links: this.generateCollectionLinks(req),
         }
         res.status(404).json(response)
+        return
+      }
+
+      // Validate input
+      if (!artistId || !role) {
+        const response: ApiResponse<null> = {
+          error: "Artist ID and role are required",
+          links: this.generateResourceLinks(req, concert),
+        }
+        res.status(400).json(response)
         return
       }
 
@@ -303,7 +304,7 @@ export class ConcertResource extends BaseResource {
       if (existingArtist) {
         const response: ApiResponse<null> = {
           error: "Artist is already in this concert",
-          links: this.generateResourceLinks(req, { id: concertId }),
+          links: this.generateResourceLinks(req, concert),
         }
         res.status(400).json(response)
         return
@@ -339,9 +340,10 @@ export class ConcertResource extends BaseResource {
       const artistId = Number(req.params.artistId)
 
       // Verify concert exists
-      const concert = await db.get("SELECT * FROM concerts WHERE id = ?", [
-        concertId,
-      ])
+      const concert = await db.get<Concert>(
+        "SELECT * FROM concerts WHERE id = ?",
+        [concertId]
+      )
 
       if (!concert) {
         const response: ApiResponse<null> = {
@@ -361,7 +363,7 @@ export class ConcertResource extends BaseResource {
       if (result.changes === 0) {
         const response: ApiResponse<null> = {
           error: "Artist not found in this concert",
-          links: this.generateResourceLinks(req, { id: concertId }),
+          links: this.generateResourceLinks(req, concert),
         }
         res.status(404).json(response)
         return
