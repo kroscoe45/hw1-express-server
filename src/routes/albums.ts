@@ -77,63 +77,50 @@ router.post("/", async (req: Request, res: Response) => {
   const query = `SELECT * FROM albums WHERE ${bodyData
     .map((f) => `${f} = ?`)
     .join(" AND ")}`
-  db.all<Album>(
-    query,
-    bodyData.map((f) => req.body[f]),
-    (err, rows) => {
-      if (!err && rows.length) {
-        try {
-          db.run(
-            insertStmnt,
-            bodyData.map((key) => req.body[key]),
-            (err) => {
-              if (!err) res.status(201)
-              else res.status(500).send("Error creating album")
-            }
-          )
-        } catch (error) {
-          res.status(500).send("Error creating album")
-        }
-      } else {
-        res.status(400).send("Invalid album data")
-      }
+  try {
+    const rows = await db.all<Album>(
+      query,
+      bodyData.map((f) => req.body[f])
+    )
+    if (rows.length > 0) {
+      res.status(400).send("Album already exists") 
+      return
     }
-  )
-})
+    const result = await db.run(
+      `INSERT INTO albums (${bodyData.join(", ")}) VALUES (${bodyData.map(() => "?").join(", ")})`,
+      bodyData.map(key => req.body[key])
+    )
+    res.status(201).json({ id: result.lastID })
+  } catch (error) {
+    res.status(500).send("Error creating album")
+  }
+});
 
 router.delete("/:id", (req: Request, res: Response) => {
   const { id } = req.params
   if (+id) {
-    db.serialize(() => {
-      db.get(
-        "SELECT * FROM albums WHERE id = ?",
-        [id],
-        (err: Error, row: any) => {
-          if (!err) {
-            if (row) {
-              db.run(
-                "DELETE FROM albums WHERE id = ?",
-                id,
-                function (err: Error) {
-                  if (err) {
-                    res.status(500).send("Error deleting album")
-                  } else {
-                    res.status(204).send("")
-                  }
-                }
-              )
-            } else {
-              res.status(404).send("Album not found")
-            }
+    try {
+      const row = await db.get("SELECT * FROM albums WHERE id = ?", [id])
+      if (row) {
+        try {
+          const trackDelete = await db.run("DELETE FROM tracks WHERE albumId = ?", [id])
+          const result = await db.run("DELETE FROM albums WHERE id = ?",[id])
+        
+        } catch (error) {
+          res.status(500).send("Error deleting album")
+        }
+      } else {
+        res.status(404).send("Album not found")
+      }    
+      } catch (error) {
+        res.status(500).send("Error deleting album")
+      }           
+        if (err) {
+            res.status(500).send("Error deleting album")
           } else {
-            res.status(500).send("Error retrieving album")
+            res.status(204).send("")
           }
         }
       )
-    })
-  } else {
-    res.status(400).send("Invalid album ID")
-  }
-})
 
 export { router as albumsRouter }
