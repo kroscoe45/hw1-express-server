@@ -1,5 +1,4 @@
 import sqlite3 from "sqlite3"
-import { promisify } from "util"
 
 export interface DbResult {
   lastID: number
@@ -44,21 +43,21 @@ class Database {
     const tables = [
       `CREATE TABLE IF NOT EXISTS albums (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT NOT NULL,
+        name TEXT NOT NULL,
         genre TEXT NOT NULL,
-        releaseYear INTEGER NOT NULL,
-        createdAt TEXT NOT NULL,
-        updatedAt TEXT NOT NULL,
-        etag TEXT NOT NULL
+        yearReleased INTEGER NOT NULL,
+        createdAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        etag TEXT NOT NULL DEFAULT (lower(hex(randomblob(8))))
       )`,
       `CREATE TABLE IF NOT EXISTS artists (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         biography TEXT NOT NULL,
-        socialMedia TEXT NOT NULL,
-        createdAt TEXT NOT NULL,
-        updatedAt TEXT NOT NULL,
-        etag TEXT NOT NULL
+        socialMediaLinks TEXT NOT NULL,
+        createdAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        etag TEXT NOT NULL DEFAULT (lower(hex(randomblob(8))))
       )`,
       `CREATE TABLE IF NOT EXISTS tracks (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -67,9 +66,9 @@ class Database {
         durationSeconds INTEGER NOT NULL,
         albumId INTEGER NOT NULL,
         artistId INTEGER NOT NULL,
-        createdAt TEXT NOT NULL,
-        updatedAt TEXT NOT NULL,
-        etag TEXT NOT NULL,
+        createdAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        etag TEXT NOT NULL DEFAULT (lower(hex(randomblob(8)))),
         FOREIGN KEY(albumId) REFERENCES albums(id) ON DELETE CASCADE,
         FOREIGN KEY(artistId) REFERENCES artists(id) ON DELETE CASCADE
       )`,
@@ -78,9 +77,9 @@ class Database {
         startTime TEXT NOT NULL,
         durationMinutes INTEGER NOT NULL,
         primaryArtistId INTEGER NOT NULL,
-        createdAt TEXT NOT NULL,
-        updatedAt TEXT NOT NULL,
-        etag TEXT NOT NULL,
+        createdAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        etag TEXT NOT NULL DEFAULT (lower(hex(randomblob(8)))),
         FOREIGN KEY(primaryArtistId) REFERENCES artists(id) ON DELETE CASCADE
       )`,
       `CREATE TABLE IF NOT EXISTS concert_artists (
@@ -92,83 +91,55 @@ class Database {
       )`,
     ]
     const triggers = [
-      `CREATE TRIGGER IF NOT EXISTS albums_etag_insert AFTER INSERT ON albums
-       BEGIN
-        UPDATE albums 
-        SET etag = lower(hex(randomblob(8))),
-          updatedAt = CURRENT_TIMESTAMP
-        WHERE id = NEW.id;
-       END;`,
       `CREATE TRIGGER IF NOT EXISTS albums_etag_update AFTER UPDATE ON albums
        BEGIN
         UPDATE albums 
         SET etag = lower(hex(randomblob(8))),
-          updatedAt = CURRENT_TIMESTAMP
-            WHERE id = NEW.id
-            AND (
-              name != OLD.name OR 
-              yearReleased != OLD.yearReleased OR 
-              genre != OLD.genre
-            );
-       END;`,
-      `CREATE TRIGGER IF NOT EXISTS artists_etag_insert AFTER INSERT ON artists
-        BEGIN
-          UPDATE artists 
-          SET etag = lower(hex(randomblob(8))),
             updatedAt = CURRENT_TIMESTAMP
-          WHERE id = NEW.id;
-        END;`,
+        WHERE id = NEW.id
+        AND (
+          name != OLD.name OR 
+          yearReleased != OLD.yearReleased OR 
+          genre != OLD.genre
+        );
+       END;`,
       `CREATE TRIGGER IF NOT EXISTS artists_etag_update AFTER UPDATE ON artists
         BEGIN
           UPDATE artists 
           SET etag = lower(hex(randomblob(8))),
-            updatedAt = CURRENT_TIMESTAMP
+              updatedAt = CURRENT_TIMESTAMP
           WHERE id = NEW.id
-            AND (
-              name != OLD.name OR 
-              biography != OLD.biography OR 
-              socialMediaLinks != OLD.socialMediaLinks
-            );
-        END;`,
-      `CREATE TRIGGER IF NOT EXISTS tracks_etag_insert AFTER INSERT ON tracks
-        BEGIN
-          UPDATE tracks 
-          SET etag = lower(hex(randomblob(8))),
-            updatedAt = CURRENT_TIMESTAMP
-          WHERE id = NEW.id;
+          AND (
+            name != OLD.name OR 
+            biography != OLD.biography OR 
+            socialMediaLinks != OLD.socialMediaLinks
+          );
         END;`,
       `CREATE TRIGGER IF NOT EXISTS tracks_etag_update AFTER UPDATE ON tracks
         BEGIN
           UPDATE tracks 
           SET etag = lower(hex(randomblob(8))),
-            updatedAt = CURRENT_TIMESTAMP
+              updatedAt = CURRENT_TIMESTAMP
           WHERE id = NEW.id
-            AND (
-              title != OLD.title OR 
-              trackNumber != OLD.trackNumber OR 
-              durationSeconds != OLD.durationSeconds OR 
-              albumId != OLD.albumId OR 
-              primaryArtistId != OLD.primaryArtistId
-            );
-        END;`,
-      `CREATE TRIGGER IF NOT EXISTS concerts_etag_insert AFTER INSERT ON concerts
-        BEGIN
-          UPDATE concerts 
-          SET etag = lower(hex(randomblob(8))),
-            updatedAt = CURRENT_TIMESTAMP
-          WHERE id = NEW.id;
+          AND (
+            title != OLD.title OR 
+            trackNumber != OLD.trackNumber OR 
+            durationSeconds != OLD.durationSeconds OR 
+            albumId != OLD.albumId OR 
+            artistId != OLD.artistId
+          );
         END;`,
       `CREATE TRIGGER IF NOT EXISTS concerts_etag_update AFTER UPDATE ON concerts
         BEGIN
           UPDATE concerts 
           SET etag = lower(hex(randomblob(8))),
-            updatedAt = CURRENT_TIMESTAMP
+              updatedAt = CURRENT_TIMESTAMP
           WHERE id = NEW.id
-            AND (
-              startTime != OLD.startTime OR 
-              durationMinutes != OLD.durationMinutes OR 
-              primaryArtistId != OLD.primaryArtistId
-            );
+          AND (
+            startTime != OLD.startTime OR 
+            durationMinutes != OLD.durationMinutes OR 
+            primaryArtistId != OLD.primaryArtistId
+          );
         END;`,
     ]
 
